@@ -11,8 +11,8 @@ public class MovieService {
     private List<Movie> movies = new ArrayList<>();
 
     public MovieService(Path path) {
-        List<String> fileContent = new ArrayList<>();
-        fileContent = getFileContent(path, fileContent);
+        List<String> fileContent;
+        fileContent = getFileContent(path);
         for (String row : fileContent) {
             String[] values = row.split(";");
             int year = 0;
@@ -35,7 +35,8 @@ public class MovieService {
         return new Movie(values[0], year, values[2]);
     }
 
-    private List<String> getFileContent(Path path, List<String> fileContent) {
+    private List<String> getFileContent(Path path) {
+        List<String> fileContent;
         try {
             fileContent = Files.readAllLines(path);
         } catch (IOException ioe) {
