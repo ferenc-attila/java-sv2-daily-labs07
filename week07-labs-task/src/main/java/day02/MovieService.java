@@ -28,18 +28,18 @@ public class MovieService {
     private Movie getMovie(String[] values, int year) {
         try {
             year = Integer.parseInt(values[1]);
-        } catch (IllegalArgumentException iae) {
+        } catch (NumberFormatException nfe) {
             System.out.println("Not a valid year!");
+            nfe.printStackTrace();
         }
-        Movie movie = new Movie(values[0], year, values[2]);
-        return movie;
+        return new Movie(values[0], year, values[2]);
     }
 
     private List<String> getFileContent(Path path, List<String> fileContent) {
         try {
             fileContent = Files.readAllLines(path);
         } catch (IOException ioe) {
-            throw new IllegalArgumentException("No such file!", ioe);
+            throw new IllegalStateException("No such file!", ioe);
         }
         return fileContent;
     }
