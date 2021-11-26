@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,45 +12,40 @@ public class Store {
 
     List<Product> products = new ArrayList<>();
 
+    public List<Product> getProducts() {
+        return products;
+    }
+
     public void addProduct(Product product) {
-        if (LocalDate.now().compareTo(product.getDateOfSell()) < 0) {
-            throw new IllegalArgumentException("Invalid date" + product.getDateOfSell().toString());
-        } else {
-            products.add(product);
+        if (product.getDateOfSell().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Invalid date: " + product.getDateOfSell().toString());
         }
+        products.add(product);
     }
 
-    public void writeSoldProductInThisMonth(int month) {
-        List<Product> soldProductsThisMonth = getSoldProductsThisMonth(month);
-        List<String> fileContent = createFileContent(soldProductsThisMonth);
-        writeCsv(month, fileContent);
+    public String writeSoldProductInThisMonth(Month month, Path dir) {
+        List<String> fileContent = createFileContent(month);
+        return writeCsv(month, fileContent, dir);
     }
 
-    private void writeCsv(int month, List<String> fileContent) {
-        String fileName = "soldProductsInMonth" + month;
+    private String writeCsv(Month month, List<String> fileContent, Path dir) {
+        StringBuilder fileName = new StringBuilder("soldProducts_").append(month.toString());
+        Path path = dir.resolve(fileName.toString());
         try {
-            Files.write(Path.of("src/main/resources/").resolve(fileName), fileContent);
+            Files.write(path, fileContent);
         } catch (IOException ioe) {
-            throw new IllegalStateException("Unable to write file", ioe);
+            throw new IllegalStateException("Unable to write file!", ioe);
         }
+        return fileName.toString();
     }
 
-    private List<String> createFileContent(List<Product> soldProductsThisMonth) {
+    private List<String> createFileContent(Month month) {
         List<String> fileContent = new ArrayList<>();
-        for (Product product : soldProductsThisMonth) {
-            String row = product.toString();
-            fileContent.add(row);
-        }
-        return fileContent;
-    }
-
-    private List<Product> getSoldProductsThisMonth(int month) {
-        List<Product> soldProductsThisMonth = new ArrayList<>();
         for (Product product : products) {
-            if (product.getDateOfSell().getYear() == LocalDate.now().getYear() && product.getDateOfSell().getMonthValue() == month) {
-                soldProductsThisMonth.add(product);
+            if (product.getDateOfSell().getYear() == LocalDate.now().getYear() && product.getDateOfSell().getMonth() == month) {
+                fileContent.add(product.toString());
             }
         }
-        return soldProductsThisMonth;
+        return fileContent;
     }
 }
